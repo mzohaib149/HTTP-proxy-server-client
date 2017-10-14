@@ -1,0 +1,49 @@
+proxy.cc:
+
+we can receive data from either client or server
+client sends HTTP request message
+server sends HTTP response message
+
+if we receive request message i.e. from client	
+	extract server name from request message
+	create new socket to connect to server
+	create client and server socket mapping
+	if cache is empty
+		send the HTTP request message to server as it is
+		add entry to cache
+	if cache is not empty
+ 		if entry is not found in cache
+			send the HTTP request message to server as it is			
+			add entry to cache	
+		if entry is found in cache
+			check if expires header exists
+			if it exists and entry is fresh according to it
+				check if date accessed is within 24 hours and last modified is within one month
+				if it is
+					send the HTTP request message to server after adding if-modified-since
+				else 
+					send the HTTP request message to server
+
+			if it doesn't exist
+				check if date accessed is within 24 hours and last modified is within one month
+				if it is
+					send the HTTP request message to server after adding if-modified-since
+				else 
+					send the HTTP request message to server
+
+
+if we receive response message i.e. from server
+	find client socket address from mapping
+	if we get response with 304				
+		send the entry in the cache
+	else if we get response with 200
+		update cache entry
+		in a loop keep on receiving remaining bytes and add to the buffer
+		send to client	
+
+client.cc:
+
+check if http:// exists in the name of webpage requested
+if it exists remove it
+create new GET request and send to proxy
+receive response and put it in file	
